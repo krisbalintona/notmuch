@@ -295,6 +295,22 @@ Typically this is added to `notmuch-mua-send-hook'."
 	    (when message-signature-insert-empty-line
 	      (forward-line -1))
 	  (goto-char (point-max))))
+      ;; If `message-cite-reply-position' is `above', e.g., for
+      ;; Gmail-like email replies, then before inserting the citation,
+      ;; put the point after the signature and insert a newline for
+      ;; spacing. Also respects citation position if
+      ;; `message-cite-style' specifies a value for
+      ;; `message-cite-reply-position'.
+      (when (or (eq message-cite-reply-position 'above)
+                (and message-cite-style
+                     (eq (eval (cadr
+                                (assq 'message-cite-reply-position
+                                      (if (symbolp message-cite-style)
+                                          (symbol-value message-cite-style)
+                                        message-cite-style))))
+                         'above)))
+        (goto-char (point-max))
+        (insert "\n"))
       (let ((from (plist-get original-headers :From))
 	    (date (plist-get original-headers :Date))
 	    (start (point)))
